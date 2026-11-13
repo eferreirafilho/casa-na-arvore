@@ -1,0 +1,43 @@
+# Publica no GitHub Pages um site já pronto, construído em outro repositório (vars.ORIGEM). Aqui não fica nenhum
+# arquivo do site: este workflow baixa o build daquela execução e publica direto.
+name: Publicar
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Execução do build na origem (vazio = a última que deu certo no main)
+        required: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Baixar o build
+        env:
+          GH_TOKEN: ${{ secrets.SITE_TOKEN }}
+          ORIGEM: ${{ vars.ORIGEM }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          if [ -z "$RUN_ID" ]; then
+            RUN_ID=$(gh run list -R "$ORIGEM" --branch main --status success --limit 1 --json databaseId -q '.[0].databaseId')
+          fi
+          gh run download "$RUN_ID" -R "$ORIGEM" -n site -D site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
