@@ -1,4 +1,4 @@
-# Publica no GitHub Pages um site já pronto, construído em outro repositório (vars.ORIGEM). Aqui não fica nenhum
+# Publica no GitHub Pages um site já pronto, construído em outro repositório (secrets.ORIGEM: nos logs, que são públicos, sai como ***). Aqui não fica nenhum
 # arquivo do site: este workflow baixa o build daquela execução e publica direto.
 name: Publicar
 
@@ -28,7 +28,7 @@ jobs:
       - name: Baixar o build
         env:
           GH_TOKEN: ${{ secrets.SITE_TOKEN }}
-          ORIGEM: ${{ vars.ORIGEM }}
+          ORIGEM: ${{ secrets.ORIGEM }}
           RUN_ID: ${{ inputs.run_id }}
         run: |
           if [ -z "$RUN_ID" ]; then
